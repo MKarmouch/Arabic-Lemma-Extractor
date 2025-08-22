@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arabic Lemma Extractor - Gemini AI (Enhanced)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Amiri', 'Traditional Arabic', 'Times New Roman', serif;
+            direction: rtl;
+            text-align: right;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            padding: 30px;
+        }
+
+        .arabic-text {
+            font-family: 'Amiri', 'Traditional Arabic', 'Times New Roman', serif;
+            font-size: 1.2em;
+            line-height: 1.8;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .api-key-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .results-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            min-height: 200px;
+        }
+
+        .lemma-table {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .lemma-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            text-align: center;
+        }
+
+        .lemma-table td {
+            vertical-align: middle;
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .token-cell {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .lemma-cell {
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .type-cell {
+            text-align: center;
+        }
+
+        .type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .type-V-I { background: #e3f2fd; color: #1976d2; }
+        .type-N { background: #f3e5f5; color: #7b1fa2; }
+        .type-VN { background: #e8f5e8; color: #388e3c; }
+        .type-ADJ { background: #fff3e0; color: #f57c00; }
+        .type-AMBIGUOUS { background: #ffebee; color: #d32f2f; }
+        .type-PART { background: #f1f8e9; color: #689f38; }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stats-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stats-label {
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .chunk-info {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .alert-custom {
+            border-radius: 15px;
+            border: none;
+            padding: 15px 20px;
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            color: white;
+        }
+
+        .btn-custom:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+
+        .btn-export {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            color: white;
+            font-size: 0.9em;
+            margin: 0 5px;
+        }
+
+        .header-section {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+
+        .header-section h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header-section p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .feature-highlight {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            backdrop-filter: blur(5px);
+        }
+
+        .export-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .warning-message {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffb74d;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #66bb6a;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .processing-mode {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-option {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            text-align: center;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-option:hover {
+            border-color: #667eea;
+            background: #f5f5ff;
+        }
+
+        .mode-option.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .header-section h1 {
+                font-size: 1.8em;
+            }
+            
+            .lemma-table {
+                font-size: 0.9em;
+            }
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container">
+            <h1><i class="fas fa-language"></i> استخراج الجذور العربية</h1>
+            <p>أداة متقدمة لاستخراج الجذور العربية باستخدام الذكاء الاصطناعي</p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="feature-highlight">
+                        <i class="fas fa-robot fa-2x mb-2"></i>
+                        <div>مدعوم بـ Google Gemini 1.5 Flash</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-highlight">
+                        <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                        <div>مصمم للأغراض التعليمية</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-highlight">
+                        <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                        <div>تحليل صرفي شامل</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-container">
+            <!-- API Key Section -->
+            <div class="api-key-section">
+                <h3><i class="fas fa-key"></i> إعداد مفتاح API</h3>
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <label for="apiKey" class="form-label">مفتاح Google Gemini API:</label>
+                        <input type="password" class="form-control" id="apiKey" placeholder="أدخل مفتاح API الخاص بك">
+                        <small class="text-muted">يمكنك الحصول على مفتاح API من <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a></small>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-secondary w-100" onclick="toggleApiKeyVisibility()">
+                            <i class="fas fa-eye" id="eyeIcon"></i> إظهار/إخفاء
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Processing Mode Section -->
+            <div class="processing-mode">
+                <h4><i class="fas fa-cog"></i> وضع المعالجة</h4>
+                <div class="mode-selector">
+                    <div class="mode-option active" data-mode="auto" onclick="selectMode('auto')">
+                        <i class="fas fa-magic"></i>
+                        <div>تلقائي</div>
+                        <small>يختار الأفضل حسب حجم النص</small>
+                    </div>
+                    <div class="mode-option" data-mode="single" onclick="selectMode('single')">
+                        <i class="fas fa-file"></i>
+                        <div>دفعة واحدة</div>
+                        <small>حتى 150 كلمة</small>
+                    </div>
+                    <div class="mode-option" data-mode="chunk" onclick="selectMode('chunk')">
+                        <i class="fas fa-layer-group"></i>
+                        <div>معالجة مجزأة</div>
+                        <small>للنصوص الطويلة</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-section">
+                <h3><i class="fas fa-edit"></i> إدخال النص العربي</h3>
+                <div class="mb-3">
+                    <label for="arabicText" class="form-label">النص المراد تحليله:</label>
+                    <textarea class="form-control arabic-text" id="arabicText" rows="8" 
+                              placeholder="أدخل النص العربي هنا للحصول على تحليل الجذور والأصول اللغوية..."></textarea>
+                    <div id="textStats" class="text-muted small mt-2"></div>
+                    <div id="processingWarning" style="display: none;"></div>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-custom btn-lg" id="analyzeBtn" onclick="analyzeText()">
+                        <i class="fas fa-cogs"></i> تحليل النص
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-lg ms-3" id="stopBtn" onclick="stopAnalysis()" style="display: none;">
+                        <i class="fas fa-stop"></i> إيقاف التحليل
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-lg ms-3" onclick="clearAll()">
+                        <i class="fas fa-trash"></i> مسح الكل
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Section -->
+            <div class="loading-spinner" id="loadingSection">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">جاري التحليل...</span>
+                </div>
+                <p class="mt-3">جاري تحليل النص باستخدام الذكاء الاصطناعي...</p>
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" 
+                             role="progressbar" 
+                             style="width: 0%">
+                        </div>
+                    </div>
+                    <div class="chunk-info" id="chunkInfo"></div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3><i class="fas fa-chart-line"></i> نتائج التحليل</h3>
+                    <div class="export-section">
+                        <h5>تصدير النتائج:</h5>
+                        <button class="btn btn-export" onclick="exportToJSON()">
+                            <i class="fas fa-code"></i> JSON
+                        </button>
+                        <button class="btn btn-export" onclick="exportToCSV()">
+                            <i class="fas fa-table"></i> CSV
+                        </button>
+                        <button class="btn btn-export" onclick="exportToText()">
+                            <i class="fas fa-file-text"></i> نص
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4" id="statsCards">
+                    <!-- Stats will be populated here -->
+                </div>
+
+                <!-- Results Table -->
+                <div class="table-responsive">
+                    <table class="table table-striped lemma-table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>الكلمة</th>
+                                <th>الجذر</th>
+                                <th>النوع</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Error Section -->
+            <div id="errorSection" style="display: none;">
+                <!-- Error messages will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let analysisResults = [];
+        let currentStats = {};
+        let processingMode = 'auto';
+        let isProcessing = false;
+        let abortController = null;
+
+        // Configuration
+        const CONFIG = {
+            WORDS_PER_CHUNK: 100,  // Reduced for safety
+            MAX_SINGLE_REQUEST: 150,  // Maximum words for single request
+            API_TIMEOUT: 30000,  // 30 seconds timeout
+            RETRY_ATTEMPTS: 3,
+            RETRY_DELAY: 1000  // 1 second
+        };
+
+        // Simplified system prompt
+        const SYSTEM_PROMPT = `You are an Arabic lemma analyzer. Group inflected forms together but treat derivations as separate lemmas.
+
+Rules:
+1. Same Lemma: كَتَبَ، يَكْتُبُ، كَتَبْتُ → كتب
+2. Separate Lemmas: كتب (verb), كتاب (noun), كاتب (writer)
+
+Output ONLY this JSON format:
+{
+  "tokens": [
+    {"token": "word", "lemma": "lemma", "type": "V-I|N|VN|ADJ|PART|AMBIGUOUS", "notes": "brief note"}
+  ],
+  "summary": {
+    "total_tokens": number,
+    "unique_lemmas": number,
+    "lemma_types": {"V-I": count, "N": count}
+  }
+}
+
+Respond with ONLY JSON, no explanations.`;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTextStats();
+            
+            const savedApiKey = localStorage.getItem('gemini_api_key');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+            }
+        });
+
+        function selectMode(mode) {
+            processingMode = mode;
+            document.querySelectorAll('.mode-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            updateTextStats();
+        }
+
+        function updateTextStats() {
+            const textarea = document.getElementById('arabicText');
+            const text = textarea.value;
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+            const chars = text.length;
+            const lines = text.split('\n').length;
+            
+            document.getElementById('textStats').innerHTML = 
+                `الكلمات: ${words.length} | الأحرف: ${chars} | الأسطر: ${lines}`;
+
+            // Show warning for large texts
+            const warningDiv = document.getElementById('processingWarning');
+            if (words.length > CONFIG.MAX_SINGLE_REQUEST) {
+                let estimatedChunks = Math.ceil(words.length / CONFIG.WORDS_PER_CHUNK);
+                warningDiv.innerHTML = `
+                    <div class="warning-message mt-2">
+                        <i class="fas fa-info-circle"></i>
+                        النص يحتوي على ${words.length} كلمة. 
+                        ${processingMode === 'single' ? 
+                            'سيتم معالجة أول 150 كلمة فقط في وضع الدفعة الواحدة.' : 
+                            `سيتم تقسيم النص إلى ${estimatedChunks} أجزاء للمعالجة.`}
+                    </div>
+                `;
+                warningDiv.style.display = 'block';
+            } else {
+                warningDiv.style.display = 'none';
+            }
+        }
+
+        function toggleApiKeyVisibility() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                apiKeyInput.type = 'password';
+                eyeIcon.className = 'fas fa-eye';
+            }
+        }
+
+        async function analyzeText() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const arabicText = document.getElementById('arabicText').value.trim();
+
+            if (!apiKey) {
+                showError('يرجى إدخال مفتاح API أولاً');
+                return;
+            }
+
+            if (!arabicText) {
+                showError('يرجى إدخال نص عربي للتحليل');
+                return;
+            }
+
+            localStorage.setItem('gemini_api_key', apiKey);
+
+            const words = arabicText.split(/\s+/).filter(word => word.length > 0);
+            
+            // Determine processing mode
+            let mode = processingMode;
+            if (mode === 'auto') {
+                mode = words.length > CONFIG.MAX_SINGLE_REQUEST ? 'chunk' : 'single';
+            }
+
+            showLoading();
+            hideError();
+            hideResults();
+            isProcessing = true;
+            
+            // Reset results
+            analysisResults = [];
+            currentStats = {
+                total_tokens: 0,
+                unique_lemmas: 0,
+                lemma_types: {}
+            };
+
+            // Show/hide buttons
+            document.getElementById('analyzeBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'inline-block';
+
+            try {
+                if (mode === 'single' || words.length <= CONFIG.MAX_SINGLE_REQUEST) {
+                    // Process in single request
+                    const textToProcess = words.slice(0, CONFIG.MAX_SINGLE_REQUEST).join(' ');
+                    const response = await callGeminiAPIWithRetry(apiKey, textToProcess);
+                    const results = parseGeminiResponse(response);
+                    
+                    analysisResults = results.tokens;
+                    currentStats = results.summary;
+                    
+                    displayResults(results);
+                    showResults();
+                    
+                    if (words.length > CONFIG.MAX_SINGLE_REQUEST) {
+                        showWarning(`تم تحليل أول ${CONFIG.MAX_SINGLE_REQUEST} كلمة فقط من أصل ${words.length} كلمة.`);
+                    }
+                } else {
+                    // Process in chunks
+                    await processInChunks(apiKey, arabicText, words);
+                }
+                
+                showSuccess('تم إكمال التحليل بنجاح!');
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                if (error.message.includes('User aborted')) {
+                    showWarning('تم إيقاف التحليل من قبل المستخدم');
+                } else {
+                    showError(`خطأ في التحليل: ${error.message}`);
+                }
+            } finally {
+                hideLoading();
+                isProcessing = false;
+                document.getElementById('analyzeBtn').style.display = 'inline-block';
+                document.getElementById('stopBtn').style.display = 'none';
+            }
+        }
+
+        async function processInChunks(apiKey, fullText, words) {
+            const chunks = [];
+            const chunkSize = CONFIG.WORDS_PER_CHUNK;
+            
+            // Create chunks
+            for (let i = 0; i < words.length; i += chunkSize) {
+                chunks.push(words.slice(i, i + chunkSize).join(' '));
+            }
+            
+            // Show progress
+            document.getElementById('progressContainer').style.display = 'block';
+            
+            const allResults = [];
+            const lemmaSet = new Set();
+            const typeCounts = {};
+            
+            for (let i = 0; i < chunks.length; i++) {
+                if (!isProcessing) {
+                    throw new Error('User aborted the analysis');
+                }
+                
+                // Update progress
+                const progress = ((i + 1) / chunks.length) * 100;
+                updateProgress(progress, i + 1, chunks.length);
+                
+                try {
+                    // Add delay between requests to avoid rate limiting
+                    if (i > 0) {
+                        await delay(500);
+                    }
+                    
+                    const response = await callGeminiAPIWithRetry(apiKey, chunks[i], i + 1, chunks.length);
+                    const results = parseGeminiResponse(response);
+                    
+                    // Aggregate results
+                    allResults.push(...results.tokens);
+                    
+                    // Update statistics
+                    results.tokens.forEach(token => {
+                        lemmaSet.add(token.lemma);
+                        const type = token.type || 'UNKNOWN';
+                        typeCounts[type] = (typeCounts[type] || 0) + 1;
+                    });
+                    
+                } catch (error) {
+                    console.error(`Error processing chunk ${i + 1}:`, error);
+                    // Continue with next chunk even if one fails
+                    showWarning(`فشل تحليل الجزء ${i + 1} من ${chunks.length}. متابعة...`);
+                }
+            }
+            
+            // Update global results
+            analysisResults = allResults;
+            currentStats = {
+                total_tokens: allResults.length,
+                unique_lemmas: lemmaSet.size,
+                lemma_types: typeCounts
+            };
+            
+            // Display combined results
+            displayResults({
+                tokens: analysisResults,
+                summary: currentStats
+            });
+            showResults();
+        }
+
+        async function callGeminiAPIWithRetry(apiKey, text, chunkNum = null, totalChunks = null) {
+            let lastError;
+            
+            for (let attempt = 1; attempt <= CONFIG.RETRY_ATTEMPTS; attempt++) {
+                try {
+                    abortController = new AbortController();
+                    
+                    const chunkInfo = chunkNum ? ` (الجزء ${chunkNum} من ${totalChunks})` : '';
+                    console.log(`Attempting API call${chunkInfo}, attempt ${attempt}...`);
+                    
+                    const response = await callGeminiAPI(apiKey, text, abortController.signal);
+                    return response;
+                    
+                } catch (error) {
+                    lastError = error;
+                    console.error(`Attempt ${attempt} failed:`, error);
+                    
+                    if (error.name === 'AbortError' || !isProcessing) {
+                        throw error;
+                    }
+                    
+                    if (attempt < CONFIG.RETRY_ATTEMPTS) {
+                        await delay(CONFIG.RETRY_DELAY * attempt);
+                    }
+                }
+            }
+            
+            throw lastError;
+        }
+
+        async function callGeminiAPI(apiKey, text, signal) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+            const requestBody = {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "text": SYSTEM_PROMPT + "\n\nAnalyze these Arabic words:\n" + text
+                            }
+                        ]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.1,
+                    "topK": 40,
+                    "topP": 0.95,
+                    "maxOutputTokens": 8192  // Maximum allowed
+                }
+            };
+
+            const timeoutId = setTimeout(() => {
+                if (abortController) abortController.abort();
+            }, CONFIG.API_TIMEOUT);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    
+                    // Check for specific error types
+                    if (errorData.error?.message?.includes('quota')) {
+                        throw new Error('تم تجاوز حد الاستخدام لمفتاح API. يرجى المحاولة لاحقاً.');
+                    } else if (errorData.error?.message?.includes('token')) {
+                        throw new Error('النص طويل جداً. يرجى تقليل حجم النص.');
+                    }
+                    
+                    throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                    throw new Error("لم يتم توليد استجابة من Gemini API");
+                }
+
+                if (!data.candidates[0].content?.parts?.[0]?.text) {
+                    throw new Error("هيكل الاستجابة غير صحيح");
+                }
+
+                return data.candidates[0].content.parts[0].text;
+                
+            } catch (error) {
+                clearTimeout(timeoutId);
+                
+                if (error.name === 'AbortError') {
+                    throw new Error('انتهت مهلة الطلب أو تم الإلغاء');
+                }
+                
+                throw error;
+            }
+        }
+
+        function parseGeminiResponse(response) {
+            try {
+                let jsonString = response.trim();
+                
+                // Remove markdown code blocks
+                jsonString = jsonString.replace(/```json\s*/gi, '');
+                jsonString = jsonString.replace(/```\s*/gi, '');
+                
+                // Find JSON boundaries
+                const jsonStart = jsonString.indexOf('{');
+                const jsonEnd = jsonString.lastIndexOf('}');
+                
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error('No JSON found in response');
+                }
+                
+                jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+                
+                // Parse JSON
+                const parsed = JSON.parse(jsonString);
+                
+                // Validate structure
+                if (!parsed.tokens || !Array.isArray(parsed.tokens)) {
+                    throw new Error('Invalid JSON structure');
+                }
+                
+                // Ensure summary exists
+                if (!parsed.summary) {
+                    parsed.summary = {
+                        total_tokens: parsed.tokens.length,
+                        unique_lemmas: new Set(parsed.tokens.map(t => t.lemma)).size,
+                        lemma_types: {}
+                    };
+                    
+                    parsed.tokens.forEach(token => {
+                        const type = token.type || 'UNKNOWN';
+                        parsed.summary.lemma_types[type] = (parsed.summary.lemma_types[type] || 0) + 1;
+                    });
+                }
+                
+                return parsed;
+                
+            } catch (error) {
+                console.error('Parsing error:', error);
+                console.log('Raw response:', response.substring(0, 500));
+                throw new Error('فشل في تحليل الاستجابة');
+            }
+        }
+
+        function stopAnalysis() {
+            isProcessing = false;
+            if (abortController) {
+                abortController.abort();
+            }
+            showWarning('جاري إيقاف التحليل...');
+        }
+
+        function updateProgress(percentage, current, total) {
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('chunkInfo').textContent = 
+                `معالجة الجزء ${current} من ${total} (${Math.round(percentage)}%)`;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function displayResults(results) {
+            displayStats(results.summary);
+            displayTable(results.tokens);
+        }
+
+        function displayStats(summary) {
+            const statsContainer = document.getElementById('statsCards');
+            
+            const stats = [
+                { label: 'إجمالي الكلمات', value: summary.total_tokens || 0, icon: 'fas fa-list' },
+                { label: 'جذور فريدة', value: summary.unique_lemmas || 0, icon: 'fas fa-seedling' },
+                { label: 'أنواع مختلفة', value: Object.keys(summary.lemma_types || {}).length, icon: 'fas fa-tags' },
+                { label: 'كلمات غامضة', value: summary.lemma_types?.AMBIGUOUS || 0, icon: 'fas fa-question-circle' }
+            ];
+
+            statsContainer.innerHTML = stats.map(stat => `
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="${stat.icon} fa-2x mb-2"></i>
+                        <span class="stats-number">${stat.value}</span>
+                        <div class="stats-label">${stat.label}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayTable(tokens) {
+            const tableBody = document.getElementById('resultsTableBody');
+            
+            if (!tokens || tokens.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">لا توجد نتائج</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = tokens.map((token, index) => {
+                const typeClass = `type-${(token.type || 'UNKNOWN').replace('-', '-')}`;
+                return `
+                    <tr>
+                        <td class="token-cell arabic-text">${token.token || ''}</td>
+                        <td class="lemma-cell arabic-text">${token.lemma || ''}</td>
+                        <td class="type-cell">
+                            <span class="type-badge ${typeClass}">${token.type || 'UNKNOWN'}</span>
+                        </td>
+                        <td class="arabic-text">${token.notes || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportToJSON() {
+            if (analysisResults.length === 0) {
+                showError('لا توجد نتائج للتصدير');
+                return;
+            }
+            
+            const data = {
+                analysis_results: analysisResults,
+                summary: currentStats,
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    total_words_processed: analysisResults.length,
+                    processing_mode: processingMode
+                }
+            };
+            
+            downloadFile(
+                JSON.stringify(data, null, 2),
+                'arabic_lemma_analysis.json',
+                'application/json'
+            );
+        }
+
+        function exportToCSV() {
+            if (analysisResults.length === 0) {
+                showError('لا توجد نتائج للتصدير');
+                return;
+            }
+            
+            const header = 'الكلمة,الجذر,النوع,ملاحظات\n';
+            const rows = analysisResults.map(token => 
+                `"${token.token}","${token.lemma}","${token.type}","${(token.notes || '').replace(/"/g, '""')}"`
+            ).join('\n');
+            
+            downloadFile(
+                '\ufeff' + header + rows,
+                'arabic_lemma_analysis.csv',
+                'text/csv;charset=utf-8;'
+            );
+        }
+
+        function exportToText() {
+            if (analysisResults.length === 0) {
+                showError('لا توجد نتائج للتصدير');
+                return;
+            }
+            
+            let text = 'تحليل الجذور العربية\n';
+            text += '==================\n\n';
+            text += `تاريخ التحليل: ${new Date().toLocaleString('ar')}\n`;
+            text += `وضع المعالجة: ${processingMode}\n\n`;
+            
+            text += 'الإحصائيات:\n';
+            text += `- إجمالي الكلمات: ${currentStats.total_tokens || 0}\n`;
+            text += `- جذور فريدة: ${currentStats.unique_lemmas || 0}\n\n`;
+            
+            text += 'التفاصيل:\n';
+            text += '---------\n';
+            analysisResults.forEach((token, index) => {
+                text += `${index + 1}. ${token.token} → ${token.lemma} (${token.type})\n`;
+                if (token.notes) {
+                    text += `   ملاحظة: ${token.notes}\n`;
+                }
+            });
+            
+            downloadFile(text, 'arabic_lemma_analysis.txt', 'text/plain');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearAll() {
+            document.getElementById('arabicText').value = '';
+            hideResults();
+            hideError();
+            updateTextStats();
+            analysisResults = [];
+            currentStats = {};
+            isProcessing = false;
+            if (abortController) {
+                abortController.abort();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSection').style.display = 'none';
+        }
+
+        function showResults() {
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function hideResults() {
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorSection = document.getElementById('errorSection');
+            errorSection.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>خطأ:</strong> ${message}
+                </div>
+            `;
+            errorSection.style.display = 'block';
+        }
+
+        function showWarning(message) {
+            const errorSection = document.getElementById('errorSection');
+            errorSection.innerHTML = `
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <strong>تنبيه:</strong> ${message}
+                </div>
+            `;
+            errorSection.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const errorSection = document.getElementById('errorSection');
+            errorSection.innerHTML = `
+                <div class="success-message">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>نجح:</strong> ${message}
+                </div>
+            `;
+            errorSection.style.display = 'block';
+            setTimeout(() => {
+                if (errorSection.innerHTML.includes('success-message')) {
+                    errorSection.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        function hideError() {
+            document.getElementById('errorSection').style.display = 'none';
+        }
+
+        // Event listeners
+        document.getElementById('arabicText').addEventListener('input', updateTextStats);
+
+        document.getElementById('arabicText').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                analyzeText();
+            }
+        });
+    </script>
+</body>
+</html>

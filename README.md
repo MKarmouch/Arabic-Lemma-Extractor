@@ -23,7 +23,7 @@ A powerful web-based tool for extracting Arabic lemmas (root forms) using Google
 
 ## 🚀 Demo
 
-Visit the live demo: [Your GitHub Pages URL will be here]
+Visit the live demo: https://mkarmouch.github.io/Arabic-Lemma-Extractor/
 
 ## 📋 Requirements
 
